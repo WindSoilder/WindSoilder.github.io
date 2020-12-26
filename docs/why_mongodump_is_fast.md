@@ -51,21 +51,75 @@ end
 run_dump_restore
 ```
 
-##### Running time conclusion
+##### Benchmark conclusion
 1. My implementation: takes about 78 seconds.
 2. Mongodump/Mongorestore: mongodump takes 1.46 seconds to dump to local bson file, mongorestore takes 79.8 seconds to restore data to database.
 
 It seems that my implementation is ok (some times even faster than mongodump/mongorestore), but here is one more problem: why mongodump so fast?
 
-Nomally, I think the process to sync a database is:
+Basically, I think the progress to sync a database is:
 1. sync every collection inside a database.
-2. for each collection, just read one document one by one.  Make these documents in a writing cache, flush cache into target collection.  (we can use more threads in this step.)
+2. for each collection, just read one document one by one.  Make these documents to a writing cache, flush cache into target collection.  (we can use more threads in this step.)
 
-So mongodump should normally do the same progress, but write data to local dumped file, but why it's so fast?
+It's likely be implemented like this (without error handling):
+```rust
+use rayon::ThreadPoolBuilder;
+use crossbeam::channel;
+use mongodb::sync::{Client, Collection};
+
+fn main()  {
+    let (sender, receiver) = channel::bounded(4);
+    // initialize database, and get collection_names to sync.
+    let source_db = Client::with_uri_str("mongodb://localhost/?authSource=admin").unwrap().database("bb");
+    let target_db = Client::with_uri_str("mongodb://remote_address/?authSource=admin").unwrap().database("bb");
+    let collection_names = source_db.list_collection_names(None).unwrap();
+    // create a threadpool to handle for specific collection's sync
+    let pool = ThreadPoolBuilder::new().num_threads(4).build().unwrap();
+
+    for name in collection_names.iter() {
+        let source_coll = source_db.collection(name);
+        let target_coll = target_db.collection(name);
+        let sender = sender.clone();
+        // spawn new thread to sync collection.
+        pool.spawn(move || {
+            sync_one_serial(source_coll, target_coll);
+            // notify that I'm done.
+            sender.send(()).unwrap();
+        })
+    }
+
+    let mut completed_count: usize = 0;
+    let total_count = collection_names.len();
+    while let Ok(_) = receiver.recv() {
+        completed_count += 1;
+        if completed_count == total_count {
+            // all sub tasks running to complete, and we are done.
+            break;
+        }
+    }
+}
+
+fn sync_one_serial(source_coll: Collection, target_coll: Collection) {
+    let buf_size = 10000;
+    let mut buffer = Vec::with_capacity(buf_size);  // make a output buffer.
+    let cursor = source_coll.find(None, None).unwrap();
+
+    for doc in cursor {
+        buffer.push(doc.unwrap());
+        if buffer.len() == buf_size {
+            let mut data_to_write = Vec::with_capacity(buf_size);
+            std::mem::swap(&mut buffer, &mut data_to_write);
+            target_coll.insert_many(data_to_write, None).unwrap();
+        }
+    }
+}
+```
+
+So mongodump should normally do the same progress, but write data to local file, why it's so fast?
 
 ### Why mongodump is fast
 
-I'm trying to find what's mongodb implementation, and find something like this, the source code can be referred from [here](https://github.com/mongodb/mongo-tools/blob/7e0f0dc16459f5dbff7ce7c17d75d149d8a67aaa/mongodump/mongodump.go#L699):
+I'm trying to find what's going on with mongodump, and get something like this, the source code is referred to [here](https://github.com/mongodb/mongo-tools/blob/7e0f0dc16459f5dbff7ce7c17d75d149d8a67aaa/mongodump/mongodump.go#L699):
 
 ![Screenshots of mongodump](screenshots/mongodump_code.png)
 
