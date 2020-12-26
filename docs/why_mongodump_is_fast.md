@@ -161,6 +161,6 @@ Nothing special :-)
 ### More
 Even mongodump/mongorestore handle bytes directly, why my implementation can sometime faster than mongodump/mongorestore?
 
-Thanks to rust core feature(memory safety, fareless concurrency, no gc).
+Thanks to rust core feature(memory safety, fareless concurrency, no gc), which helps me to write a multi-threading based, mongodb synchronizer tool so easily.
 
 Maybe I will make a post about how can I make this done :-)
