@@ -1,14 +1,13 @@
 ## Why mongodump is fast
 With curiosity, I have written a mongo database Synchronizer which synchronize from one database to other database.
 
-When I finish this, I try to test it with `mongodump/mongorestore` pair, surprisingly, `mongodump/mongorestore` is super faster than my implementation.
+When I finish this, I try to benchmark it with `mongodump/mongorestore` pair. Surprisingly, `mongodump` is super faster than my hypothesis.
 
-### Test result
+### Benchmark
 #### Scenario
 A database with 4 collection, each collection have 1,000,000 document, every document is `{"a": "b"}`, no index for each collection.
 
-The mongod is deployed in my local machine.
-
+The mongodb is deployed in my local machine.
 
 #### Result
 Here is my testing result:
@@ -52,9 +51,9 @@ end
 run_dump_restore
 ```
 
-My implementation: takes about 78 seconds.
-
-Mongodump/Mongorestore: mongodump takes 1.46 seconds to dump to local bson file, mongorestore takes 79.8 seconds to restore data to database.
+##### Running time conclusion
+1. My implementation: takes about 78 seconds.
+2. Mongodump/Mongorestore: mongodump takes 1.46 seconds to dump to local bson file, mongorestore takes 79.8 seconds to restore data to database.
 
 It seems that my implementation is ok (some times even faster than mongodump/mongorestore), but here is one more problem: why mongodump so fast?
 
@@ -68,7 +67,7 @@ So mongodump should normally do the same progress, but write data to local dumpe
 
 I'm trying to find what's mongodb implementation, and find something like this, the source code can be referred from [here](https://github.com/mongodb/mongo-tools/blob/7e0f0dc16459f5dbff7ce7c17d75d149d8a67aaa/mongodump/mongodump.go#L699):
 
-![Screenshots of mongodump](screenshots/mongodump_codee.png)
+![Screenshots of mongodump](screenshots/mongodump_code.png)
 
 Hmm... It seems nothing special, `mongodump` is just iterating cursor, and copy the data to output buffer.  Oh...wait, what's the meaning of this?
 
