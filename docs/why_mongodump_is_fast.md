@@ -149,7 +149,11 @@ type Cursor struct {
 
 The `Cursor.Current` is just `bson.Raw`, which is just `bytes[]`.
 
-So I think here is the reason, when `mongodump` read data from source, it just get ***bson bytes***, and don't need to *Deserialize* bytes to document.  In my scenario, it means that `mongodump` don't need to *Deserialize* 4,000,000 documents, which can save a lot of time.
+So I think here is the reason, compared to my implementation(read document one by one):
+
+when `mongodump` read data from source, it just get ***bson bytes***, and don't need to *Deserialize* bytes to document, then it just *redirect these bytes* to *local storage*, write bytes to local storage(SSD) is also fast.
+
+In my scenario, it means that `mongodump` don't need to *Deserialize* 4,000,000 documents, which can save a lot of time.
 
 ### Conclusion
 Nothing special :-)
