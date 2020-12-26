@@ -52,8 +52,8 @@ run_dump_restore
 ```
 
 ##### Benchmark conclusion
-1. My implementation: takes about 78 seconds.
-2. Mongodump/Mongorestore: mongodump takes 1.46 seconds to dump to local bson file, mongorestore takes 79.8 seconds to restore data to database.
+1. My implementation: takes about `78` seconds.
+2. Mongodump/Mongorestore: *mongodump* takes `1.46` seconds to dump to local bson file, *mongorestore* takes `79.8` seconds to restore data to database.
 
 It seems that my implementation is ok (some times even faster than mongodump/mongorestore), but here is one more problem: why mongodump so fast?
 
@@ -61,7 +61,7 @@ Basically, I think the progress to sync a database is:
 1. sync every collection inside a database.
 2. for each collection, just read one document one by one.  Make these documents to a writing cache, flush cache into target collection.  (we can use more threads in this step.)
 
-It's likely be implemented like this (without error handling):
+It's likely be implemented in rust like this (without error handling):
 ```rust
 use rayon::ThreadPoolBuilder;
 use crossbeam::channel;
@@ -157,3 +157,10 @@ In my scenario, it means that `mongodump` don't need to *Deserialize* 4,000,000 
 
 ### Conclusion
 Nothing special :-)
+
+### More
+Even mongodump/mongorestore handle bytes directly, why my implementation can sometime faster than mongodump/mongorestore?
+
+Thanks to rust core feature(memory safety, fareless concurrency, no gc).
+
+Maybe I will make a post about how can I make this done :-)
