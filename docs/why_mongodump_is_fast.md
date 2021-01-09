@@ -1,4 +1,10 @@
 ## Why mongodump is fast
+
+### TL;DR
+Mongodump just read data from mongodb with raw bson data, it doesn't deserize data, and directly write these data into local filesystem.
+
+### More if you are curious about my discovery
+
 With curiosity, I have written a mongo database Synchronizer which synchronize from one database to other database.
 
 When I finish this, I try to benchmark it with `mongodump/mongorestore` pair. Surprisingly, `mongodump` is super faster than my hypothesis.
