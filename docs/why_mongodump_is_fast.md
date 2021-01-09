@@ -1,7 +1,7 @@
 ## Why mongodump is fast
 
 ### TL;DR
-Mongodump just read data from mongodb with raw bson data, it doesn't deserize data, and directly write these data into local filesystem.
+Mongodump just read data from mongodb with raw bson, it doesn't deserize/serialize data, and directly write these data into local filesystem.
 
 ### More if you are curious about my discovery
 
