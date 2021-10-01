@@ -11,7 +11,7 @@ Fortunally, we have some very useful base image for rust, you can find [rust](ht
 
 So, let's start with it:
 ```dockerfile
-FROM rust:lately
+FROM rust:latest
 
 WORKDIR /app
 ```
@@ -38,7 +38,7 @@ apt install musl-tools -y
 So, let's just add it to our dockerfile:
 
 ```dockerfile
-FROM rust:lately
+FROM rust:latest
 
 WORKDIR /app
 
@@ -85,7 +85,7 @@ RUN cargo install --path . --target=x86_64-unknown-linux-musl
 Here is dockerfile:
 ```dockerfile
 
-FROM rust:lately
+FROM rust:latest
 
 WORKDIR /app
 
@@ -107,7 +107,7 @@ RUN cargo +nightly install --path . --target=x86_64-unknown-linux-musl
 ### 5. make runtime image smaller
 So here, everything can be done for now.  But I want to make up my runtime image smaller, this image is bacally too large (1G+).  So we can use [multi-stage build](https://docs.docker.com/develop/develop-images/multistage-build/), and copy our final binary to new base image.
 ```dockerfile
-FROM rustlang:lately as builder
+FROM rustlang:latest as builder
 ...
 ...
 RUN cargo +nightly install --path . --target=x86_64-unknown-linux-musl
@@ -120,7 +120,7 @@ COPY --from=builder /usr/local/cargo/bin/* /usr/local/bin
 ### 6. Final dockerfile
 Ok, everything is done, here is final working dockerfile:
 ```dockerfile
-FROM rust:lately as builder
+FROM rust:latest as builder
 
 WORKDIR /app
 
@@ -155,7 +155,7 @@ ENV RUSTUP_UPDATE_ROOT https://mirrors.ustc.edu.cn/rust-static/rustup
 Which can speed up my component download speed.  Here is the final after set up these two environment variable:
 
 ```dockerfile
-FROM rust:lately as builder
+FROM rust:latest as builder
 
 WORKDIR /app
 
