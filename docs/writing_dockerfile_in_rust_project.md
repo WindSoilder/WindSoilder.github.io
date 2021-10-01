@@ -24,7 +24,7 @@ WORKDIR /app
 ```
 
 ### 2. install musl-tools
-Because I want to make my final images works on [alpine](https://hub.docker.com/_/alpine), which need my code compiled in `x86_64-unknown-linux-musl` platform, here is the shell command to add rustup target:
+Because I want to make my final images works on [alpine](https://hub.docker.com/_/alpine), which need my code compiled in `x86_64-unknown-linux-musl` platform, here is the shell command to add compile target:
 ```shell
 rustup target add x86_64-unknown-linux-musl
 ```
