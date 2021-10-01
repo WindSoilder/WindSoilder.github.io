@@ -9,7 +9,7 @@ So here it's my journey about writing rust project dockerfile result in a small 
 ### 1. setup base image
 Fortunally, we have some very useful base image for rust, you can find [rust](https://hub.docker.com/_/rust) image if your project is compiled in stable rust.  If you want to build with nightly rust, here is [nightly rust image](https://hub.docker.com/r/rustlang/rust) you can use directly.
 
-So, let's starts with it:
+So, let's start with it:
 ```dockerfile
 FROM rust:lately
 
@@ -143,7 +143,7 @@ FROM alpine:3.14
 COPY --from=builder /usr/local/cargo/bin/* /usr/local/bin
 ```
 
-### Some extras(Only If you find out it's too slow to execute rustup target add x86_64-unknown-linux-musl)
+### Some extras(Only If you find out it's too slow to add rustup target)
 When you execute `rustup target add x86_64-unknown-linux-musl`, maybe it's too slow to downloading component.  You can try to setup `RUSTUP_DIST_SERVER` and `RUSTUP_UPDATE_ROOT` environment variable.
 
 Like I'm in China, these two env variables can be set to this:
