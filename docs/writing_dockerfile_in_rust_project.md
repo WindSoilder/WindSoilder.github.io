@@ -35,7 +35,7 @@ apt update
 apt install musl-tools -y
 ```
 
-So, let's just add it to a our dockerfile:
+So, let's just add it to our dockerfile:
 
 ```dockerfile
 FROM rust:lately
@@ -49,12 +49,12 @@ RUN rustup target add x86_64-unknown-linux-musl
 ```
 
 ### 3. make up vendor locally
-Because `cargo vendor` can vendor all dependencies locally, so when you compile your project, `cargo` don't need to `update crates.io` and `download dependency code again`.
+[cargo vendor](https://doc.rust-lang.org/cargo/commands/cargo-vendor.html) can vendor all dependencies locally, when you compile your project, `cargo` don't need to `update crates.io` and `download dependency code` again, so we can take less build time.
 ```shell
 cargo vendor
 ```
 
-After running cargo vendor, it will show up the following message:
+After running cargo vendor, it will show up some messages like this:
 
 ```text
 To use vendored sources, add this to your .cargo/config.toml for this project:
@@ -66,14 +66,13 @@ replace-with = "vendored-sources"
 directory = "vendor"
 ```
 
-Just do it for now, please note that the `.cargo` is located in your project root, rather than `$HOME/.cargo`.
+Just follow it, please note that the `.cargo` is located in your project root, rather than `$HOME/.cargo`.
 
-Note: personally, I don't want to make output `vendor` directory to be tracking by `git`.  Because it can be too large, so just make up vendor locally is ok.
+Note: personally, I don't want to make output `vendor` directory to be tracked by `git`.  Because it can easily be too large, just make up vendor locally is ok.
 
 ### 4. setup our source code and compile.
 In this stage you just need to copy your source code, Cargo.toml, Cargo.lock, vendor to build directory:
-```shell
-RUN cargo new project_name
+```dockerfile
 COPY ./.cargo .cargo
 COPY ./vendor vendor
 COPY Cargo.toml Cargo.lock ./
@@ -84,7 +83,7 @@ RUN cargo install --path . --target=x86_64-unknown-linux-musl
 ```
 
 Here is dockerfile:
-```shell
+```dockerfile
 
 FROM rust:lately
 
@@ -96,7 +95,6 @@ RUN apt install musl-tools -y
 RUN rustup target add --toolchain nightly x86_64-unknown-linux-musl
 
 # setup source code and compile.
-RUN cargo new project_name
 COPY ./.cargo .cargo
 COPY ./vendor vendor
 COPY Cargo.toml Cargo.lock ./
@@ -122,7 +120,7 @@ COPY --from=builder /usr/local/cargo/bin/* /usr/local/bin
 ### 6. Final dockerfile
 Ok, everything is done, here is final working dockerfile:
 ```dockerfile
-FROM rust:lately
+FROM rust:lately as builder
 
 WORKDIR /app
 
@@ -132,7 +130,6 @@ RUN apt install musl-tools -y
 RUN rustup target add x86_64-unknown-linux-musl
 
 # setup source code and compile.
-RUN cargo new project_name
 COPY ./.cargo .cargo
 COPY ./vendor vendor
 COPY Cargo.toml Cargo.lock ./
@@ -149,7 +146,7 @@ COPY --from=builder /usr/local/cargo/bin/* /usr/local/bin
 ### Some extras(Only If you find out it's too slow to execute rustup target add x86_64-unknown-linux-musl)
 When you execute `rustup target add x86_64-unknown-linux-musl`, maybe it's too slow to downloading component.  You can try to setup `RUSTUP_DIST_SERVER` and `RUSTUP_UPDATE_ROOT` environment variable.
 
-Like I'm in China, these two env variable can set to this:
+Like I'm in China, these two env variables can be set to this:
 ```shell
 ENV RUSTUP_DIST_SERVER https://mirrors.ustc.edu.cn/rust-static
 ENV RUSTUP_UPDATE_ROOT https://mirrors.ustc.edu.cn/rust-static/rustup
@@ -158,7 +155,7 @@ ENV RUSTUP_UPDATE_ROOT https://mirrors.ustc.edu.cn/rust-static/rustup
 Which can speed up my component download speed.  Here is the final after set up these two environment variable:
 
 ```dockerfile
-FROM rust:lately
+FROM rust:lately as builder
 
 WORKDIR /app
 
@@ -171,7 +168,6 @@ RUN apt install musl-tools -y
 RUN rustup target add x86_64-unknown-linux-musl
 
 # setup source code and compile.
-RUN cargo new project_name
 COPY ./.cargo .cargo
 COPY ./vendor vendor
 COPY Cargo.toml Cargo.lock ./
@@ -188,4 +184,4 @@ COPY --from=builder /usr/local/cargo/bin/* /usr/local/bin
 ### Special thanks and references
 - [keng42](https://github.com/keng42) teach me something about docker, and provide a [github cd](https://github.com/WindSoilder/hors/pull/54) file.
 - https://zhuanlan.zhihu.com/p/356274853 inspires me about `cargo vendor`, the source code compile steps is borrowed from here.
-- https://huangjj27.gitlab.io/posts/rust-mirror/ inspired me about `RUSTUP_DIST_SERVER` and `RUSTUP_UPDATE_ROOT`.
+- https://huangjj27.gitlab.io/posts/rust-mirror/ inspires me about `RUSTUP_DIST_SERVER` and `RUSTUP_UPDATE_ROOT`.
