@@ -18,7 +18,7 @@ WORKDIR /app
 
 Or nightly rust:
 ```dockerfile
-FROM rust:nightly
+FROM rustlang/rust:nightly
 
 WORKDIR /app
 ```
