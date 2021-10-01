@@ -1,7 +1,7 @@
 ## Writing dockerfile in rust project
-It's normally that when you write a rust project, you want to make it running on k8s, or build a small runtime container.
+When you writing a rust project, maybe you want to build a small runtime container, then you can run it in k8s or something else you like.
 
-So here it's my journey about writing rust project dockerfile result in a small runtime image(***alpine based***).
+Here it's my journey about writing rust project dockerfile result in a small runtime image(***alpine based***).
 
 ### TL;DR
 [Here](#6-final-dockerfile) is the final dockerfile example, you can just take it and customize to what you want.
