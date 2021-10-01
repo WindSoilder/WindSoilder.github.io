@@ -92,7 +92,7 @@ WORKDIR /app
 RUN apt update
 RUN apt install musl-tools -y
 
-RUN rustup target add --toolchain nightly x86_64-unknown-linux-musl
+RUN rustup target add x86_64-unknown-linux-musl
 
 # setup source code and compile.
 COPY ./.cargo .cargo
@@ -101,7 +101,7 @@ COPY Cargo.toml Cargo.lock ./
 COPY ./src src
 
 # build with x86_64-unknown-linux-musl to make it run with alpine.
-RUN cargo +nightly install --path . --target=x86_64-unknown-linux-musl
+RUN cargo install --path . --target=x86_64-unknown-linux-musl
 ```
 
 ### 5. make runtime image smaller
@@ -110,7 +110,7 @@ So here, everything can be done for now.  But I want to make up my runtime image
 FROM rustlang:latest as builder
 ...
 ...
-RUN cargo +nightly install --path . --target=x86_64-unknown-linux-musl
+RUN cargo install --path . --target=x86_64-unknown-linux-musl
 
 # second stage.
 FROM alpine:3.14
@@ -136,7 +136,7 @@ COPY Cargo.toml Cargo.lock ./
 COPY ./src src
 
 # build with x86_64-unknown-linux-musl to make it run with alpine.
-RUN cargo +nightly install --path . --target=x86_64-unknown-linux-musl
+RUN cargo install --path . --target=x86_64-unknown-linux-musl
 
 # second stage.
 FROM alpine:3.14
@@ -174,7 +174,7 @@ COPY Cargo.toml Cargo.lock ./
 COPY ./src src
 
 # build with x86_64-unknown-linux-musl to make it run with alpine.
-RUN cargo +nightly install --path . --target=x86_64-unknown-linux-musl
+RUN cargo install --path . --target=x86_64-unknown-linux-musl
 
 # second stage.
 FROM alpine:3.14
