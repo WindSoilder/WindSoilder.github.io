@@ -144,6 +144,33 @@ FROM alpine:3.14
 COPY --from=builder /usr/local/cargo/bin/* /usr/local/bin
 ```
 
+### 7. Additional dockerfile
+Thanks for [trusch2](https://www.reddit.com/user/trusch2/) comment on [reddit](https://www.reddit.com/r/rust/comments/pz2pxn/simple_intro_about_writing_dockerfile_in_rust/), we can use gcr.io/distroless/cc-debian11 to have a small runtime on debian image.
+
+The benefit trusch2 mention about using gcr.io/distroless/cc-debian11 are:
+- its small (~20MB)
+- there is no shell and nothing else an attacker could use when trying to escape the container
+- you can just build within a normal debian env and then use cc-debian11 as base without the dance around using libmusl instead of libc.
+
+So, here is another final dockerfile based on debian:
+```dockerfile
+FROM rust:latest as builder
+
+WORKDIR /app
+
+# setup source code and compile.
+COPY ./.cargo .cargo
+COPY ./vendor vendor
+COPY Cargo.toml Cargo.lock ./
+COPY ./src src
+
+RUN cargo install --path .
+
+# second stage.
+FROM gcr.io/distroless/cc-debian11
+COPY --from=builder /usr/local/cargo/bin/* /usr/local/bin
+```
+
 ### Special thanks and references
 - [keng42](https://github.com/keng42) teach me something about docker, and provide a [github cd](https://github.com/WindSoilder/hors/pull/54) file.
 - https://zhuanlan.zhihu.com/p/356274853 inspires me about `cargo vendor`, the source code compile steps is borrowed from here.
