@@ -23,29 +23,36 @@ FROM rustlang/rust:nightly
 WORKDIR /app
 ```
 
-### 2. install musl-tools
-Because I want to make my final images works on [alpine](https://hub.docker.com/_/alpine), which need my code compiled in `x86_64-unknown-linux-musl` platform, here is the shell command to add compile target:
-```shell
-rustup target add x86_64-unknown-linux-musl
+Because I want it to run inside alpine, I can directly use *alpine* directly.  So the dockerfile can be this:
+```dockerfile
+FROM rust:alpine3.14
+
+WORKDIR /app
 ```
 
+Or nightly rust:
+```dockerfile
+FROM rustlang/rust:nightly-alpine
+
+WORKDIR /app
+```
+
+*alpine* relative image contains rust *x86_64-unknown-linux-musl* target, we can use it directly to compile our code.
+
+### 2. install musl-tools
 It's also recommended to install `musl-tools` to make many crates (like textwrap) compile successfully.
 ```shell
-apt update
-apt install musl-tools -y
+apk add musl-dev
 ```
 
 So, let's just add it to our dockerfile:
 
 ```dockerfile
-FROM rust:latest
+FROM rust:alpine3.14
 
 WORKDIR /app
 
-RUN apt update
-RUN apt install musl-tools -y
-
-RUN rustup target add x86_64-unknown-linux-musl
+RUN apk add musl-dev
 ```
 
 ### 3. make up vendor locally
@@ -85,14 +92,11 @@ RUN cargo install --path . --target=x86_64-unknown-linux-musl
 Here is dockerfile:
 ```dockerfile
 
-FROM rust:latest
+FROM rust:alpine3.14
 
 WORKDIR /app
 
-RUN apt update
-RUN apt install musl-tools -y
-
-RUN rustup target add x86_64-unknown-linux-musl
+RUN apk add musl-dev
 
 # setup source code and compile.
 COPY ./.cargo .cargo
@@ -120,52 +124,11 @@ COPY --from=builder /usr/local/cargo/bin/* /usr/local/bin
 ### 6. Final dockerfile
 Ok, everything is done, here is final working dockerfile:
 ```dockerfile
-FROM rust:latest as builder
+FROM rust:alpine3.14 as builder
 
 WORKDIR /app
 
-RUN apt update
-RUN apt install musl-tools -y
-
-RUN rustup target add x86_64-unknown-linux-musl
-
-# setup source code and compile.
-COPY ./.cargo .cargo
-COPY ./vendor vendor
-COPY Cargo.toml Cargo.lock ./
-COPY ./src src
-
-# build with x86_64-unknown-linux-musl to make it run with alpine.
-RUN cargo install --path . --target=x86_64-unknown-linux-musl
-
-# second stage.
-FROM alpine:3.14
-COPY --from=builder /usr/local/cargo/bin/* /usr/local/bin
-```
-
-### Some extras(Only If you find out it's too slow to add rustup target)
-When you execute `rustup target add x86_64-unknown-linux-musl`, maybe it's too slow to downloading component.  You can try to setup `RUSTUP_DIST_SERVER` and `RUSTUP_UPDATE_ROOT` environment variable.
-
-Like I'm in China, these two env variables can be set to this:
-```shell
-ENV RUSTUP_DIST_SERVER https://mirrors.ustc.edu.cn/rust-static
-ENV RUSTUP_UPDATE_ROOT https://mirrors.ustc.edu.cn/rust-static/rustup
-```
-
-Which can speed up my component download speed.  Here is the final after set up these two environment variable:
-
-```dockerfile
-FROM rust:latest as builder
-
-WORKDIR /app
-
-ENV RUSTUP_DIST_SERVER https://mirrors.ustc.edu.cn/rust-static
-ENV RUSTUP_UPDATE_ROOT https://mirrors.ustc.edu.cn/rust-static/rustup
-
-RUN apt update
-RUN apt install musl-tools -y
-
-RUN rustup target add x86_64-unknown-linux-musl
+RUN apk add musl-dev
 
 # setup source code and compile.
 COPY ./.cargo .cargo
