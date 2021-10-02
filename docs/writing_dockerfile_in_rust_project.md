@@ -89,6 +89,11 @@ COPY ./src src
 RUN cargo install --path . --target=x86_64-unknown-linux-musl
 ```
 
+Here is a big shortcoming: in vendor based approach, if I change source code, the whole dependency needs to be compiled again, which can cause a lot of compile time.  So we would like to make use of docker cache, what we can do is:
+1. create an empty project, compile only dependency, then,
+2. remove the dummy empty project, copy our source code to working directory, then,
+3. build the project.
+
 Here is dockerfile:
 ```dockerfile
 
@@ -98,13 +103,20 @@ WORKDIR /app
 
 RUN apk add musl-dev
 
-# setup source code and compile.
+# create a new empty project
+RUN cargo init
+
 COPY ./.cargo .cargo
 COPY ./vendor vendor
 COPY Cargo.toml Cargo.lock ./
+# build dependencies, when my source code changes, this build can be cached, we don't need to compile dependency again.
+RUN cargo build
+# remove the dummy build.
+RUN cargo clean -p $project_name_specified_in_cargo
+
 COPY ./src src
 
-# build with x86_64-unknown-linux-musl to make it run with alpine.
+# build with x86_64-unknown-linux-musl to make it runs on alpine.
 RUN cargo install --path . --target=x86_64-unknown-linux-musl
 ```
 
@@ -130,11 +142,16 @@ WORKDIR /app
 
 RUN apk add musl-dev
 
-# setup source code and compile.
+# create a new empty project
+RUN cargo init
+
 COPY ./.cargo .cargo
 COPY ./vendor vendor
 COPY Cargo.toml Cargo.lock ./
-COPY ./src src
+# build dependencies, when my source code changes, this build can be cached, we don't need to compile dependency again.
+RUN cargo build
+# remove the dummy build.
+RUN cargo clean -p $project_name_specified_in_cargo
 
 # build with x86_64-unknown-linux-musl to make it run with alpine.
 RUN cargo install --path . --target=x86_64-unknown-linux-musl
@@ -158,11 +175,16 @@ FROM rust:latest as builder
 
 WORKDIR /app
 
-# setup source code and compile.
+# create a new empty project
+RUN cargo init
+
 COPY ./.cargo .cargo
 COPY ./vendor vendor
 COPY Cargo.toml Cargo.lock ./
-COPY ./src src
+# build dependencies, when my source code changes, this build can be cached, we don't need to compile dependency again.
+RUN cargo build
+# remove the dummy build.
+RUN cargo clean -p $project_name_specified_in_cargo
 
 RUN cargo install --path .
 
@@ -170,6 +192,9 @@ RUN cargo install --path .
 FROM gcr.io/distroless/cc-debian11
 COPY --from=builder /usr/local/cargo/bin/* /usr/local/bin
 ```
+
+### Restriction
+This vendor based doesn't work well in workspace based project.  For non vendor based approach, [cargo chef](https://github.com/LukeMathWalker/cargo-chef) is a valuable thing to consider.
 
 ### Special thanks and references
 - [keng42](https://github.com/keng42) teach me something about docker, and provide a [github cd](https://github.com/WindSoilder/hors/pull/54) file.
