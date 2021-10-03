@@ -13,6 +13,9 @@ The idea to take less build time:
 - build only dependencies first, so when only my source code changed, no need to compile dependencies again.
 - In vendor based build(1 and 2), we use locally pre-generated vendor.  Then we don't need to update `crates.io` source and `download dependency code` when compiling, less build time we take.
 
+## Declaration
+We use `latest` tag in our demo dockerfile, which is not recommended in production, when you pick one to use, it's recommended to use base image with a fixed version, like `FROM rust:1.55.0`
+
 ## Vendor based dockerfile
 ### 1. setup base image
 Fortunally, we have some very useful base image for rust, you can find [rust](https://hub.docker.com/_/rust) image if your project is compiled in stable rust.  If you want to build with nightly rust, here is [nightly rust image](https://hub.docker.com/r/rustlang/rust) you can use directly.
