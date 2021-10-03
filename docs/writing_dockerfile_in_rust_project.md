@@ -1,10 +1,17 @@
 # Writing dockerfile in rust project
 When you writing a rust project, maybe you want to build a small runtime container, then you can run it in k8s or something else you like.
 
-Here it's my journey about writing rust project dockerfile result in a small runtime image(***alpine based***).
+Here it's my journey about writing rust project dockerfile result in a small runtime image(***alpine based*** and ***distroless/cc-debian based***).
 
 ## TL;DR
-[Here](#6-final-dockerfile) is the final dockerfile example, you can just take it and customize to what you want.
+There are three final dockerfile example, you can just take it and customize to what you want.
+1. (Only works well for non workspace based project) Vendor based alpine runtime image is [here](#6-final-dockerfile)
+2. (Only works well for non workspace based project) Vendor based cc-debian runtime image is [here](#7-additional-dockerfile)
+3. (More general and recommended) Not vendor based cc-debian runtime image is [here](#not-vendor-based-dockerfile-based-on-cargo-chef)
+
+The idea to take less build time:
+- build only dependencies first, so when only my source code changed, no need to compile dependencies again.
+- In vendor based build(1 and 2), we use locally pre-generated vendor.  Then we don't need to update `crates.io` source and `download dependency code` when compiling, less build time we take.
 
 ## Vendor based dockerfile
 ### 1. setup base image
@@ -163,9 +170,9 @@ COPY --from=builder /usr/local/cargo/bin/* /usr/local/bin
 ```
 
 ### 7. Additional dockerfile
-Thanks for [trusch2](https://www.reddit.com/user/trusch2/) comment on [reddit](https://www.reddit.com/r/rust/comments/pz2pxn/simple_intro_about_writing_dockerfile_in_rust/), we can use gcr.io/distroless/cc-debian11 to have a small runtime on debian image.
+Thanks for [trusch2](https://www.reddit.com/user/trusch2/) comment on [reddit](https://www.reddit.com/r/rust/comments/pz2pxn/simple_intro_about_writing_dockerfile_in_rust/), we can use [gcr.io/distroless/cc-debian11](https://gcr.io/distroless/cc-debian11) to have a small runtime on debian image.
 
-The benefit trusch2 mention about using gcr.io/distroless/cc-debian11 are:
+The benefit trusch2 mention about using [gcr.io/distroless/cc-debian11](https://gcr.io/distroless/cc-debian11) are:
 - its small (~20MB)
 - there is no shell and nothing else an attacker could use when trying to escape the container
 - you can just build within a normal debian env and then use cc-debian11 as base without the dance around using libmusl instead of libc.
@@ -256,4 +263,4 @@ RUN cargo install cargo-chef
 ### Special thanks and references
 - [keng42](https://github.com/keng42) teach me something about docker, and provide a [github cd](https://github.com/WindSoilder/hors/pull/54) file.
 - https://zhuanlan.zhihu.com/p/356274853 inspires me about `cargo vendor`, the source code compile steps is borrowed from here.
-- https://huangjj27.gitlab.io/posts/rust-mirror/ inspires me about `RUSTUP_DIST_SERVER` and `RUSTUP_UPDATE_ROOT`.
+- so many suggestions from [reddit](https://www.reddit.com/r/rust/comments/pz2pxn/simple_intro_about_writing_dockerfile_in_rust/)
