@@ -5,12 +5,12 @@ Here it's my journey about writing rust project dockerfile result in a small run
 
 ## TL;DR
 There are three final dockerfile example, you can just take it and customize to what you want.
-1. (Only works well for non workspace based project) Vendor based alpine runtime image is [here](#6-final-dockerfile)
-2. (Only works well for non workspace based project) Vendor based cc-debian runtime image is [here](#7-additional-dockerfile)
-3. (More general and recommended) Not vendor based cc-debian runtime image is [here](#not-vendor-based-dockerfile-based-on-cargo-chef)
+1. **(Only works well for non workspace based project)** Vendor based **alpine** runtime image is [here](#6-final-dockerfile)
+2. **(Only works well for non workspace based project)** Vendor based **cc-debian** runtime image is [here](#7-additional-dockerfile)
+3. **(More general and recommended)** Not vendor based **cc-debian** runtime image is [here](#not-vendor-based-dockerfile-based-on-cargo-chef)
 
 The idea to take less build time:
-- build only dependencies first, so when only my source code changed, no need to compile dependencies again.
+- build only dependencies first, so when only project source code changed, no need to compile dependencies again.
 - In vendor based build(1 and 2), we use locally pre-generated vendor.  Then we don't need to update `crates.io` source and `download dependency code` when compiling, less build time we take.
 
 ## Declaration
