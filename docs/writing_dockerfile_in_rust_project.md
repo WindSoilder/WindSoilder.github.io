@@ -1,11 +1,12 @@
-## Writing dockerfile in rust project
+# Writing dockerfile in rust project
 When you writing a rust project, maybe you want to build a small runtime container, then you can run it in k8s or something else you like.
 
 Here it's my journey about writing rust project dockerfile result in a small runtime image(***alpine based***).
 
-### TL;DR
+## TL;DR
 [Here](#6-final-dockerfile) is the final dockerfile example, you can just take it and customize to what you want.
 
+## Vendor based dockerfile
 ### 1. setup base image
 Fortunally, we have some very useful base image for rust, you can find [rust](https://hub.docker.com/_/rust) image if your project is compiled in stable rust.  If you want to build with nightly rust, here is [nightly rust image](https://hub.docker.com/r/rustlang/rust) you can use directly.
 
@@ -195,6 +196,62 @@ COPY --from=builder /usr/local/cargo/bin/* /usr/local/bin
 
 ### Restriction
 This vendor based doesn't work well in workspace based project.  For non vendor based approach, [cargo chef](https://github.com/LukeMathWalker/cargo-chef) is a valuable thing to consider.
+
+## Not vendor based dockerfile based on cargo-chef
+[cargo-chef](https://crates.io/crates/cargo-chef) can Cache the dependencies of your Rust project and speed up your Docker builds.  The page also gives us a very good documentation about how to write `cargo-chef` based dockerfile.
+
+Here is the final dockerfile which uses `cargo-chef`:
+```dockerfile
+FROM rustlang/rust:latest AS chef
+# We only pay the installation cost once,
+# it will be cached from the second build onwards
+RUN cargo install cargo-chef
+
+WORKDIR app
+
+FROM chef AS planner
+COPY . .
+RUN cargo chef prepare --recipe-path recipe.json
+
+FROM chef AS builder
+COPY --from=planner /app/recipe.json recipe.json
+# Build dependencies - this is the caching Docker layer!
+RUN cargo chef cook --release --recipe-path recipe.json
+
+# Build application
+COPY . .
+RUN cargo install --path .
+
+# We do not need the Rust toolchain to run the binary!
+FROM gcr.io/distroless/cc-debian11
+COPY --from=builder /usr/local/cargo/bin/* /usr/local/bin
+```
+
+### Extras (only needs when your network to crates.io is too slow)
+When your network to `crates.io` is too slow, you can use a custom crates.io source.  To do this, create a file in the project root directory `.cargo/cargo.toml`.  Like I'm in China, I can use tuna source instead of `crates.io` source.
+
+Fill the `.cargo/cargo.toml` file like this:
+```toml
+[source.crates-io]
+replace-with = "tuna"
+
+[source.tuna]
+registry = "https://mirrors.tuna.tsinghua.edu.cn/git/crates.io-index.git"
+```
+
+Then just change your dockerfile a little:
+```dockerfile
+FROM rustlang/rust:latest AS chef
+
+COPY ./.cargo .cargo
+# We only pay the installation cost once,
+# it will be cached from the second build onwards
+RUN cargo install cargo-chef
+
+...
+...
+...
+```
 
 ### Special thanks and references
 - [keng42](https://github.com/keng42) teach me something about docker, and provide a [github cd](https://github.com/WindSoilder/hors/pull/54) file.
