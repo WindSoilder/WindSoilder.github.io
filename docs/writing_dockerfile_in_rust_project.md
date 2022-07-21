@@ -238,9 +238,9 @@ COPY --from=builder /usr/local/cargo/bin/* /usr/local/bin
 ```
 
 ### Extras (only needs when your network to crates.io is too slow)
-When your network to `crates.io` is too slow, you can use a custom crates.io source.  To do this, create a file in the project root directory `.cargo/cargo.toml`.  Like I'm in China, I can use tuna source instead of `crates.io` source.
+When your network to `crates.io` is too slow, you can use a custom crates.io source.  To do this, create a file in the project root directory `.cargo/config`.  Like I'm in China, I can use tuna source instead of `crates.io` source.
 
-Fill the `.cargo/cargo.toml` file like this:
+Fill the `.cargo/config` file like this:
 ```toml
 [source.crates-io]
 replace-with = "tuna"
