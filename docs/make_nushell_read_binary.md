@@ -35,7 +35,7 @@ Firstly I want to implement it as nushll's builtin command, but sadly found that
 
 [Nushell plugin system](https://www.nushell.sh/book/plugins.html) comes into play!  After reading the awesome documentation and [python plugin example](https://github.com/nushell/nushell/blob/main/crates/nu_plugin_python/plugin.py), it can be implemented as plugin.
 
-Finally here comes the repo: https://github.com/WindSoilder/nu_plugin_bin_reader
+Finally here comes the repo: [nu_plugin_bin_reader](https://github.com/WindSoilder/nu_plugin_bin_reader)
 
 It empowers nushell to read binary data, and it supports the following feature:
 1. supports 100+ binary formats, if there are more formats available in the gallery, this plugin can auto support it without changing source code
