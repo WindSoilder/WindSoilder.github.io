@@ -1,6 +1,6 @@
 ## Make nushell read binary
 
-Recently [jt] shares an idea about reading png data, in short, it's if we can implement something like this, it'd be helpful for users to parse binary data.
+One month ago [jt](https://github.com/jntrnr) shared an idea about reading png data, in short, if we can implement something like this, it'd be helpful for users to parse binary data.
 
 ```
 open myfile.png | find IHDR | read bits 32 32
@@ -9,12 +9,14 @@ open myfile.png | find IHDR | read bits 32 32
 I think that's a good idea, start my research about it.
 
 ### TL;DR
-Please check https://github.com/WindSoilder/nu_plugin_bin_reader to see what `nushell` can do for binary format.
+Please check [nu_plugin_bin_reader](https://github.com/WindSoilder/nu_plugin_bin_reader) to see what [nushell](https://www.nushell.sh/) can do for binary format.
 
 ### Research journey
 The first thing come to mind is that I can use awesome rust [image](https://docs.rs/image/latest/image/) crate to achieve this, we can read metadata from `xxx.png`, and use the crate to parse the binary file, finally fetch the information we want.
 
-But what if we want to read other binary file format?  Like `ttf`, I need to find other `ttf` parsing lib, and make it into `nushell` somehow.  And `IHDR` is only valid for `png` file, not valid in `ttf` file, different file have different
+But what if we want to read other binary file format?  Like `ttf`, I need to find other `ttf` parsing lib, and make it into `nushell` somehow.
+
+And `IHDR` is only valid for `png` file, not valid in `ttf` file, different file have different header and body definition.
 
 The solution is not scale.
 
@@ -23,13 +25,8 @@ Then I start google to check if there are something exists for parsing binary da
 But it feels somehow I'm just reimplement binary parsing logic, and these binary format are well defined and unlikely to be changed, that's not really good.
 
 Finally I find [kaitai struct](https://kaitai.io/), here is the introduction:
-```
-Reading and writing binary formats is hard, especially if it’s an interchange format that should work across a multitude of platforms and languages.
 
-Have you ever found yourself writing repetitive, error-prone and hard-to-debug code that reads binary data structures from files or network streams and somehow represents them in memory for easier access?
-
-Kaitai Struct tries to make this job easier — you only have to describe the binary format once and then everybody can use it from their programming languages — cross-language, cross-platform.
-```
+> Reading and writing binary formats is hard, especially if it’s an interchange format that should work across a multitude of platforms and languages.  Have you ever found yourself writing repetitive, error-prone and hard-to-debug code that reads binary data structures from files or network streams and somehow represents them in memory for easier access?  Kaitai Struct tries to make this job easier — you only have to describe the binary format once and then everybody can use it from their programming languages — cross-language, cross-platform.
 
 Wow, it seems so promising, and it supports so much format in their [gallery](https://formats.kaitai.io/), that's what I want.
 
