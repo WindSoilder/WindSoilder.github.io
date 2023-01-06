@@ -17,7 +17,7 @@ In detail:
 Here are some examples of how nushell parses user input commands:
 
 ## Example 1: `^ls -alh out> here11`
-1. doing lex parsing, here is lex parsing result
+- doing lex parsing, here is lex parsing result
 ```rust
 // lex structure:
 [
@@ -30,7 +30,7 @@ Here are some examples of how nushell parses user input commands:
 Span is a special structure indicates the region of token contents, we can get detailed body from span.
 As we can see, our lex contains 4 tokens, they are separated by space.
 
-2. parse the lex structure into a structure called `LiteBlock`:
+- parse the lex structure into a structure called `LiteBlock`:
 ```rust
 // LiteBlock
 LiteBlock {
@@ -47,7 +47,7 @@ LiteBlock {
 
 After analysing tokens, nushell knows that it's going to be two commands, one is `ls -alh`, the other is redirection indicator `out> here11`.
 
-3. Convert from `LiteBlock` to `Block`, here is the block pipelines
+- Convert from `LiteBlock` to `Block`, here is the block pipelines
 ```rust
 Pipeline {
     elements: [
@@ -70,13 +70,13 @@ Pipeline {
 ```
 
 It contains more information about our commands, our pipeline contains 2 elements:
-- first one is nushell expression, and it contains external call with name "ls" and arguments "-alh"
-- second one is redirection indicator, it tells us that we need to redirect stdout to file "here11".
+1. first one is nushell expression, and it contains external call with name "ls" and arguments "-alh"
+2. second one is redirection indicator, it tells us that we need to redirect stdout to file "here11".
 
-4. Finally nushell will eval given block, during evaluation, it evaluates elements one by one.
+- Finally nushell will eval given block, during evaluation, it evaluates elements one by one.
 
 ## Example 2: `^ls -alh | save --raw a.txt`
-1. doing lex parse, here is lex parse result
+- doing lex parse, here is lex parse result
 ```rust
 # lex structure
 [
@@ -90,7 +90,7 @@ It contains more information about our commands, our pipeline contains 2 element
 ```
 As we can see, our lex contains 6 tokens, they are separated by space and pipe.
 
-2. parse the lex structure into a `LiteBlock`:
+- parse the lex structure into a `LiteBlock`:
 ```rust
 # lite block
 LiteBlock { block: [
@@ -108,7 +108,7 @@ LiteBlock { block: [
 
 It still contains two commands, one is `^ls -alh`, the other one is `save --raw a.txt`.
 
-3. Convert from `LiteBlock` to `Block`, here is the block pipelines
+- Convert from `LiteBlock` to `Block`, here is the block pipelines
 ```rust
 # debug block pipelines
 [
@@ -147,10 +147,10 @@ It still contains two commands, one is `^ls -alh`, the other one is `save --raw 
 ```
 
 It contains two elements:
-- first one is nushell expression, it contains external call with name "ls" and arguments "-alh"
-- second one is another nushell expression, it contains internal command, the command have declaration id 202(which is "save" command in our case), and a named argument called "raw", a positional argument with value "a.txt"
+1. first one is nushell expression, it contains external call with name "ls" and arguments "-alh"
+2. second one is another nushell expression, it contains internal command, the command have declaration id 202(which is "save" command in our case), and a named argument called "raw", a positional argument with value "a.txt"
 
-4. Finally nushell will eval given block, during evaluation, it evaluates elements one by one.
+- Finally nushell will eval given block, during evaluation, it evaluates elements one by one.
 
 ## Reference source code:
 1. [eval_source](https://github.com/nushell/nushell/blob/a9bdc655c1fdbad43e811db059bb502c86e16230/crates/nu-cli/src/util.rs#L200) function, it's the main entrypoint in repl.
