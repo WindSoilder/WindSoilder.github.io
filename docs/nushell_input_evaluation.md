@@ -1,7 +1,10 @@
 # How nushell evaluates user input
 
+I'm always curious if we type something like `^ls -alh`, how does nushell parse my input and execute the command.
+
 This blog will note how nushell evaluates user input.
 
+## High level insight
 At high level, the data flow will be something like this:
 
 ```
