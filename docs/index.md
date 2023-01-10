@@ -3,6 +3,7 @@
 Nothing special, just welcome :-)
 
 ### Posts
+- [Some notes about nushell (2023-01-10)](some_notes_about_nushell.md)
 - [(nushell hack) - How nushell evaluates user input (2023-01-06)](nushell_input_evaluation.md)
 - [Make nushell read binary (2022-08-08)](make_nushell_read_binary.md)
 - [Avoid using too much lock in multi threading code(2022-04-18)](avoid_using_too_much_lock_in_multi_threading_code.md)
