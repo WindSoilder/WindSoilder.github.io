@@ -3,6 +3,7 @@
 Nothing special, just welcome :-)
 
 ### Posts
+- [(nushell hack) - How nushell parse from block to expression](nushell_parse_progress.md)
 - [Some notes about nushell (2023-01-10)](some_notes_about_nushell.md)
 - [(nushell hack) - How nushell evaluates user input (2023-01-06)](nushell_input_evaluation.md)
 - [Make nushell read binary (2022-08-08)](make_nushell_read_binary.md)
