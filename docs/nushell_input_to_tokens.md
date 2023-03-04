@@ -9,7 +9,7 @@ At high level, the data flow will be something like this:
 
 ```
                            lex parse            lite parse                parse
-user input command(string) ----------> Tokens ------------->  LiteBlock ------------> Block
+user input command(string) ----------> Tokens ------------->  LiteBlocks ------------> Blocks
 ```
 
 In detail:

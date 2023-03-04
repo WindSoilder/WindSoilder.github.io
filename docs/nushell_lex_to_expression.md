@@ -4,7 +4,7 @@ Previously, I noted something like how nushell parse from user input string to b
 
 ```
                            lex parse            lite parse                parse
-user input command(string) ----------> Tokens ------------->  LiteBlock ------------> Block
+user input command(string) ----------> Tokens ------------->  LiteBlocks ------------> Blocks
 ```
 
 Here I'll take a note how a `Block` is parsed.
@@ -61,10 +61,10 @@ At first level, we check:
 1. if the input is likely to be a math expression(`666` in our example).
 2. If it's not a math expression, it's a call to command(`echo` in our example).
 
-## Parse math expression
+### Parse math expression
 When nushell want to parse a math expression, it parses lhs(`666`) value by a `parse_value` function, with `SyntaxShape::Any`.  Then the math expression doesn't have rhs, it returns `lhs`
 
-## Parse a cmd call
+### Parse a cmd call
 During parse call, nushell checks if it's an internal command, then it parses it's arguments by `parse_value` function.  What's the values shape?  Well, if it's a nushell internal command, the argument's shape is defined like this:
 
 ```rust
@@ -89,3 +89,6 @@ When nushell parses a value, it does the following check:
 3. check input syntax shape:
 - If syntax shape `SyntaxShape::Any`, it try to parse input as `Binary`, `FileSize`, `Duration`, `Range`, `DateTime`, `Record`...`String`.
 - If syntax shape is `SyntaxShape::String`, it try to parse input as a string.
+
+## Conclusion
+When nushell parse user input to an expression, if it's a math expression, nushell invoke `parse_value` to parse from input to value.  If it's a command call, nushell checks if user input argument is valid, and using `parse_value` function to parse argument value.
