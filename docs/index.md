@@ -3,6 +3,7 @@
 Nothing special, just welcome :-)
 
 ### Posts
+- [Network - Subnet and subnet mask(2023-06-23)](subnet_and_subnet_mask.md)
 - [nushell hack - How nushell parse from lex tokens to expression (2023-03-04)](nushell_lex_to_expression.md)
 - [Some notes about nushell (2023-01-10)](some_notes_about_nushell.md)
 - [nushell hack - How nushell parse from input to lex tokens (2023-01-06)](nushell_input_to_tokens.md)
