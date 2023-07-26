@@ -47,20 +47,20 @@ Here we go.
 Here is wireshark screenshot:
 ![Screenshots of cp empty file to nas](./screenshots/nfs_read_write_figure_1.png)
 It composed of the following process:
-A: get attributes from `/mnt/nas` (which is the target we want to write to)
-B: return attributes of `/mnt/nas`
-A: check what permission I have of `/mnt/nas`
-B: return permissions
-A: lookup `/mnt/nas/empty_file` to check if it exists
-B: return `NFS4ERR_NOENT`
-A: ok, then I open `/mnt/nas/empty_file` with `OPEN4_CREaTE` type.
-B: return relative `StateID`
-A: make an `OPEN_CONFIRM` operation
-B: confirmed
-A: set attribute of opened file `/mnt/nas/empty_file`
-B: return `OK`
-A: closing relative `StateID`
-B: return `OK`
+- A: get attributes from `/mnt/nas` (which is the target we want to write to)
+- B: return attributes of `/mnt/nas`
+- A: check what permission I have of `/mnt/nas`
+- B: return permissions
+- A: lookup `/mnt/nas/empty_file` to check if it exists
+- B: return `NFS4ERR_NOENT`
+- A: ok, then I open `/mnt/nas/empty_file` with `OPEN4_CREaTE` type.
+- B: return relative `StateID`
+- A: make an `OPEN_CONFIRM` operation
+- B: confirmed
+- A: set attribute of opened file `/mnt/nas/empty_file`
+- B: return `OK`
+- A: closing relative `StateID`
+- B: return `OK`
 
 Yeah, it looks pretty intuitive, right?  Let's look into more detail:
 
@@ -136,17 +136,17 @@ Finally we closed the opened file.
 Here is wireshark screenshot:
 ![Screenshots of cp non empty file to nas](./screenshots/nfs_read_write_figure_10.png)
 Actually it's nearly the same to copy empty file to B:
-A: get attributes from `/mnt/nas`
-B: reuturn attributes of `/mnt/nas`
-A: lookup `/mnt/nas/non_empty_file` to check if it exists
-B: return `NFS4ERR_NOENT`
-A: ok, then I open `/mnt/nas/non_empty_file` with `OPEN4_CREATE` type.
-B: return relative `StateID`
-A: set attribute of opened file `/mnt/nas/non_empty_file`
-B: return `OK`
-A: write data to `/mnt/nas/non_empty_file`, which starts with offset 0, length is 7
-B: return `OK`
-A: closing relative `StateID`
+- A: get attributes from `/mnt/nas`
+- B: reuturn attributes of `/mnt/nas`
+- A: lookup `/mnt/nas/non_empty_file` to check if it exists
+- B: return `NFS4ERR_NOENT`
+- A: ok, then I open `/mnt/nas/non_empty_file` with `OPEN4_CREATE` type.
+- B: return relative `StateID`
+- A: set attribute of opened file `/mnt/nas/non_empty_file`
+- B: return `OK`
+- A: write data to `/mnt/nas/non_empty_file`, which starts with offset 0, length is 7
+- B: return `OK`
+- A: closing relative `StateID`
 
 In the process, it doesn't check the permission of `/mnt/nas`, because it's checked previously, we don't need to check it again in the same client.  The same to `OPEN_CONFIRM`, because the owner doesn't used for the first time.
 
