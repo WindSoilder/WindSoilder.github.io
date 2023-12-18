@@ -46,6 +46,16 @@ ServerAliveInterval 60
 ServerAliveCountMax 120
 ```
 
+Then we can try to run tcpdump on client side to verify it works:
+```
+sudo tcpdump -i xxx host <server> -w auto_disconnect_with_heartbeat.cap
+```
+
+![Screenshots of client](./screenshots/ssh_hanged_figure_2.png)
+
+As we can see, our client is sending out packages per 30 seconds(I'm setting ServerAliveInterval 30).
+
+## Reason guess
 The reason why the connection is disconnected in the middle is complicated, here I copied from [stackexchange](https://serverfault.com/questions/611265/ssh-connection-after-some-time-i-cant-type-anything) to know about why something like this happened:
 
 ```
