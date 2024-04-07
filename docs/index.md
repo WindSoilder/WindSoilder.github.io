@@ -3,6 +3,7 @@
 Nothing special, just welcome :-)
 
 ### Posts
+- [nushell hack - How nushell plugin system work(2024-04-07)](nu_plugin.md)
 - [Network - Ssh hanged if we don't input for a long time(2023-12-19)](ssh_hanged.md)
 - [Network - TCP slow start in wireshark(2023-08-29)](tcp_slow_start.md)
 - [nushell hack - how nushell module system work(2023-08-02)](nushell_module.md)
