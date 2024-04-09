@@ -13,7 +13,7 @@ Recall how to run a command from a plugin:
 
 
 ## Register the plugin
-For example: [nu_plugin_example]() defines many commands, like: `example one`, `example two`, `example three`.  Nushell needs to have a way to get these commands' signature.  To achieve this, nushell will run the plugin binary, communicate with it to get these signature, then save these signature into local `plugin.nu` file as a cache.
+For example: [nu_plugin_example]() defines many commands, like: `example one`, `example two`, `example three`.  Nushell needs to have a way to get these commands' signature.  
 
 The process can be describe as the following:
 ```
@@ -33,7 +33,8 @@ nushell             plugin
   |                    |
 
 ```
-When we want to register a plugin, nushell will run the plugin binary and get all command signatures from a plugin.  All the interesting things lays inside [get_signature]() function.
+
+When we want to register a plugin, nushell will run the plugin binary and get all command signatures from a plugin.  All the interesting things lays inside [get_signature](https://github.com/nushell/nushell/blob/40f72e80c3a4d35ea58405539cee056e0e77653e/crates/nu-plugin/src/plugin/mod.rs#L214) function.
 
 ### How `get_signautre` works
 I drawed a diagram to show hot it works at high level:
@@ -103,7 +104,6 @@ impl PluginInterfaceManager {
 }
 ```
 
-#### subscribe plugin call to Manager
 As we can see, when we create a `PluginInterfaceManager`, it will give us a channel of plugin_call_subscription.  `plugin_call_subscription_receiver` will be used in `manager.consume_call` method.  Which is called in [marke_plugin_interface](#make_plugin_interface), in background thread.
 
 And `plugin_call_subscription_sender` will be used when we want to call plugin, nushell will use it inside `wirte_plugin_call` method.
@@ -384,3 +384,13 @@ So in summary, this is how `PluginInterfaceManager` manage streams:
 1. When receive response from plugin, if it contains stream data, create an entry in `reading_streams`, the key is stream id, the value is result data sender channel.
 2. result receiver of channel will be wrapped in `PipelineData::ListStream` or `PipelineData::ExternalStream`, and returns to nushell engine.
 3. as more data returns from plugin, `PluginInterfaceManager` will get data sender channel from `reading_streams`, and send these data out.
+
+## Reference source code:
+All these code in previous sessions can be found here:
+1. [make_plugin_interface](https://github.com/nushell/nushell/blob/40f72e80c3a4d35ea58405539cee056e0e77653e/crates/nu-plugin/src/plugin/mod.rs#L159): create a new `PluginInterfaceManager` and run `consume_all` in background.
+2. [consume_all](https://github.com/nushell/nushell/blob/40f72e80c3a4d35ea58405539cee056e0e77653e/crates/nu-plugin/src/plugin/interface/plugin.rs#L401): run in background to consume all messages from `plugin`.
+3. [consume](https://github.com/nushell/nushell/blob/40f72e80c3a4d35ea58405539cee056e0e77653e/crates/nu-plugin/src/plugin/interface/plugin.rs#L451): a main handler to consume a message, it's invoked by `consume_all`.
+4. [write_plugin_call](https://github.com/nushell/nushell/blob/40f72e80c3a4d35ea58405539cee056e0e77653e/crates/nu-plugin/src/plugin/interface/plugin.rs#L651): Write a plugin call message. Returns the writer for the stream.
+5. [receive_plugin_call_resposne](https://github.com/nushell/nushell/blob/40f72e80c3a4d35ea58405539cee056e0e77653e/crates/nu-plugin/src/plugin/interface/plugin.rs#L756): Read the channel for plugin call messages and handle them until the response is received.
+6. [read_pipeline_data](https://github.com/nushell/nushell/blob/40f72e80c3a4d35ea58405539cee056e0e77653e/crates/nu-plugin/src/plugin/interface.rs#L179): Read PipelineData from `plugin`'s output.
+7. [read_stream](https://github.com/nushell/nushell/blob/40f72e80c3a4d35ea58405539cee056e0e77653e/crates/nu-plugin/src/plugin/interface/stream.rs#L560): Register a new stream for reading.

@@ -1,5 +1,9 @@
 # How nushell evaluates user input
 
+Disclaim: due to [redirection overhaul](https://github.com/nushell/nushell/pull/11934) pr, this article is out of date, please check [new version](./nushell_input_to_tokens_new_version.md) instead.
+
+--------
+
 I'm always curious if we type something like `^ls -alh`, how does nushell parse my input and execute the command.
 
 This blog will note how nushell evaluates user input.
