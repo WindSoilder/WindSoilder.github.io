@@ -317,6 +317,109 @@ It contains two elements:
 Note that the redirection attribute of first PipelineElemet is different to previous example, which value is None, here the value is `Some(Single{source: Stderr, ...})`.
 It's important, when we run external command `ls`, we can set stderr attribute of the process to `piped()` directly.
 
+
+## Example 3: `^ls -alh o+e>| save --raw a.txt`
+- doing lex parse, here is lex parse result
+```rust
+[
+    Token { contents: Item, span: Span { start: 13587, end: 13590 } },    // token for ^ls
+    Token { contents: Item, span: Span { start: 13591, end: 13595 } },    // token for -alh
+    Token { contents: OutErrGreaterPipe, span: Span { start: 13596, end: 13601 } },  // token for o+e>|
+    Token { contents: Item, span: Span { start: 13602, end: 13606 } },    // token for save
+    Token { contents: Item, span: Span { start: 13607, end: 13612 } },    // token for --raw
+    Token { contents: Item, span: Span { start: 13613, end: 13618 } }     // token for a.txt
+]
+```
+
+As we can see, our lex contains 6 tokens, they are separated by space and pipe.
+
+- parse the lex structure into a `LiteBlock`:
+```rust
+LiteBlock {
+    block: [
+        LitePipeline {
+            commands: [
+                LiteCommand {
+                    pipe: None,
+                    comments: [],
+                    parts: [
+                        Span { start: 13587, end: 13590 }, Span { start: 13591, end: 13595 }
+                    ],
+                    redirection: Some(Single { source: StdoutAndStderr, target: Pipe { connector: Span { start: 13596, end: 13601 } } })
+                },
+                LiteCommand { 
+                    pipe: Some(Span { start: 13596, end: 13601 }), 
+                    comments: [], 
+                    parts: [
+                        Span { start: 13602, end: 13606 },
+                        Span { start: 13607, end: 13612 },
+                        Span { start: 13613, end: 13618 }
+                    ],
+                    redirection: None 
+                }
+            ]
+        }
+    ]
+}
+```
+
+It still contains two commands, one is `^ls -alh`, the other one is `save --raw a.txt`.
+
+Note that the redirection attribute of first LiteCommand is different to previous one, which value is None, here the value is `Some(Single{source: Stderr, ...})`.
+
+- Convert from `LiteBlock` to `Block`, here is the block pipelines
+```rust
+// debug block pipelines
+[
+    Pipeline {
+        elements: [
+            PipelineElement {
+                pipe: None,
+                expr: Expression {
+                    expr: ExternalCall(
+                        Expression {
+                            expr: String("ls"), span: Span { start: 13588, end: 13590 }, ty: String, custom_completion: None
+                        },
+                        [
+                            Regular(Expression { expr: String("-alh"), span: Span { start: 13591, end: 13595 }, ty: String, custom_completion: None })
+                        ]
+                    ),
+                    span: Span { start: 13587, end: 13595 },
+                    ty: Any,
+                    custom_completion: None
+                },
+                redirection: Some(Single { source: StdoutAndStderr, target: Pipe { span: Span { start: 13596, end: 13601 } } })
+            },
+            PipelineElement {
+                pipe: Some(Span { start: 13596, end: 13601 }),
+                expr: Expression {
+                    expr: Call(
+                        Call {
+                            decl_id: 207,
+                            head: Span { start: 13602, end: 13606 },
+                            arguments: [
+                                Named((Spanned { item: "raw", span: Span { start: 13607, end: 13612 } }, None, None)),
+                                Positional(Expression { expr: Filepath("a.txt", false), span: Span { start: 13613, end: 13618 }, ty: String, custom_completion: None })
+                            ],
+                            parser_info: {} 
+                        }
+                    ),
+                    span: Span { start: 13602, end: 13618 }, ty: Nothing, custom_completion: None },
+                    redirection: None 
+            }
+        ]
+    }
+]
+```
+
+It contains two elements:
+1. first one is nushell expression, it contains external call with name "ls" and arguments "-alh"
+2. second one is another nushell expression, it contains internal command, the command have declaration id 207(which is "save" command in our case), and a named argument called "raw", a positional argument with value "a.txt"
+
+Note that the redirection attribute of first PipelineElemet is different to previous example, which value is None, here the value is `Some(Single{source: StdoutAndStderr, ...})`.
+It's important, when we run external command `ls`, we can set stderr attribute of the process to `piped()` directly.
+
+
 ## Reference source code:
 1. [eval_source](https://github.com/nushell/nushell/blob/40f72e80c3a4d35ea58405539cee056e0e77653e/crates/nu-cli/src/util.rs#L204) function, it's the main entrypoint in repl.
 2. [parse](https://github.com/nushell/nushell/blob/40f72e80c3a4d35ea58405539cee056e0e77653e/crates/nu-parser/src/parser.rs#L6213) function, as we look into the function body, we can see there are two function calls [lex](https://github.com/nushell/nushell/blob/40f72e80c3a4d35ea58405539cee056e0e77653e/crates/nu-parser/src/lex.rs#L351) and [parse_block](https://github.com/nushell/nushell/blob/40f72e80c3a4d35ea58405539cee056e0e77653e/crates/nu-parser/src/parser.rs#L5676).
